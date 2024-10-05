@@ -43,16 +43,26 @@ async def main():
     await data.save()
     # await data.backup()
 
-    async with asyncio.TaskGroup() as tg:
-        loop = asyncio.get_event_loop()
-        api_server = api.API(config, data)
-        tg.create_task(api_server.serve(loop))
-        if config['broker']['enabled'] is True:
-            mqtt = MQTT(config, data)
-            tg.create_task(mqtt.connect())
-        if config['integrations']['discord']['enabled'] is True:
-            bot = discord_bot.DiscordBot(command_prefix="!", intents=discord.Intents.all(), config=config, data=data)
-            tg.create_task(bot.start_server())
+    mqtt = None
+
+    try:
+        async with asyncio.TaskGroup() as tg:
+            loop = asyncio.get_event_loop()
+            api_server = api.API(config, data)
+            tg.create_task(api_server.serve(loop))
+            if config['broker']['enabled'] is True:
+                mqtt = MQTT(config, data)
+                tg.create_task(mqtt.connect())
+            if config['integrations']['discord']['enabled'] is True:
+                bot = discord_bot.DiscordBot(command_prefix="!", intents=discord.Intents.all(), config=config, data=data)
+                tg.create_task(bot.start_server())
+
+    except asyncio.exceptions.CancelledError:
+        pass
+
+    # try to stop (store any unsaved data on the way out)
+    if mqtt:
+        await mqtt.stop()
 
 if __name__ == "__main__":
     asyncio.run(main())

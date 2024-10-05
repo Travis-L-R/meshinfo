@@ -164,7 +164,7 @@ class MemoryDataStore:
         return None
 
 
-  async def save(self):
+  async def save(self, immediately=False):
     save_start = datetime.now(ZoneInfo(self.config['server']['timezone']))
     last_data = self.config['server']['last_data_save'] if 'last_data_save' in self.config['server'] else self.config['server']['start_time']
     since_last_data = (save_start - last_data).total_seconds()
@@ -183,7 +183,7 @@ class MemoryDataStore:
         print(f"Enriched in {round(end.timestamp() - save_start.timestamp(), 2)} seconds")
         self.config['server']['last_backfill'] = end
 
-    if since_last_data >= self.config['server']['intervals']['data_save']:
+    if immediately or since_last_data >= self.config['server']['intervals']['data_save']:
         data_renderer = DataRenderer(self.config, copy.deepcopy(self))
         await data_renderer.render()
         end = datetime.now(ZoneInfo(self.config['server']['timezone']))

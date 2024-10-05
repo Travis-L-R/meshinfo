@@ -87,6 +87,12 @@ class MQTT:
         packet, meta = self.parser.parseMQTT(msg)
         await self.handler.handle_packet(packet=packet, meta=meta)
 
+    async def stop(self):
+        """Saves, and shuts down any handlers (so they can save).."""
+        await self.data.save(immediately=True)
+        await self.handler.stop()
+
+
     async def publish(self, client, topic, msg):
         result = await client.publish(topic, msg)
         status = result[0]
