@@ -9,7 +9,7 @@ import time
 from zoneinfo import ZoneInfo
 import aiomqtt
 
-from meshdecoder.meshinfo_decoder import MeshInfoParser, MeshInfoHandler
+from meshdecoder.meshinfo_decoder import ExtendedMeshInfoParser, ExtendedMeshInfoHandler
 
 
 class MQTT:
@@ -23,9 +23,9 @@ class MQTT:
         self.username = config['broker']['username']
         self.password = config['broker']['password']
 
-        self.parser = MeshInfoParser(
+        self.parser = ExtendedMeshInfoParser(
             mesh_db=self.data, json_enabled=self.config['broker']['decoders']['json']['enabled'])
-        self.handler = MeshInfoHandler(
+        self.handler = ExtendedMeshInfoHandler(
             mesh_db=self.data, meshinfo_config=config, loop=asyncio.get_event_loop())
 
         # setup logging
