@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+import os
 
 from encoders import _JSONEncoder
 
@@ -42,5 +43,8 @@ class DataRenderer:
 
     def save_file(self, filename, data):
         logging.info(f"Saving {filename}")
-        with open(f"{self.config['paths']['data']}/{filename}", "w", encoding='utf-8') as f:
+        with open(f"{self.config['paths']['data']}/{filename}.swp", "w", encoding='utf-8') as f:
             json.dump(data, f, indent=2, sort_keys=True, cls=_JSONEncoder)
+
+        os.replace(f"{self.config['paths']['data']}/{filename}.swp",
+                   f"{self.config['paths']['data']}/{filename}")
