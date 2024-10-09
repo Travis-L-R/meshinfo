@@ -9,7 +9,7 @@ import time
 from zoneinfo import ZoneInfo
 import aiomqtt
 
-from meshdecoder.meshinfo_decoder import MeshInfoParser, MeshInfoHandler
+from meshdecoder.examples.meshinfo_decoder import MeshInfoParser, MeshInfoHandler
 
 
 class MQTT:
