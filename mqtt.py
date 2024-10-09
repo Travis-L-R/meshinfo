@@ -9,7 +9,7 @@ import time
 from zoneinfo import ZoneInfo
 import aiomqtt
 
-from meshdecoder.meshinfo_decoder import ExtendedMeshInfoParser, ExtendedMeshInfoHandler
+from meshdecoder.examples.meshinfo_decoder import ExtendedMeshInfoParser, ExtendedMeshInfoHandler
 
 
 class MQTT:
@@ -24,7 +24,11 @@ class MQTT:
         self.password = config['broker']['password']
 
         self.parser = ExtendedMeshInfoParser(
-            mesh_db=self.data, json_enabled=self.config['broker']['decoders']['json']['enabled'])
+            mesh_db=self.data,
+            json_enabled=self.config['broker']['decoders']['json']['enabled'],
+            psk_key_register=[
+                e['key'] for e in self.config['broker']['channels'].get('encryption', [])]
+        )
         self.handler = ExtendedMeshInfoHandler(
             mesh_db=self.data, meshinfo_config=config, loop=asyncio.get_event_loop())
 
@@ -91,7 +95,6 @@ class MQTT:
         """Saves, and shuts down any handlers (so they can save).."""
         await self.data.save(immediately=True)
         await self.handler.stop()
-
 
     async def publish(self, client, topic, msg):
         result = await client.publish(topic, msg)
