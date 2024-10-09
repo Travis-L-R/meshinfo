@@ -24,7 +24,10 @@ class MQTT:
         self.password = config['broker']['password']
 
         self.parser = MeshInfoParser(
-            mesh_db=self.data, json_enabled=self.config['broker']['decoders']['json']['enabled'])
+            mesh_db=self.data,
+            json_enabled=self.config['broker']['decoders']['json']['enabled'],
+            psk_key_register = [e['key'] for e in self.config['broker']['channels'].get('encryption', [])]
+            )
         self.handler = MeshInfoHandler(
             mesh_db=self.data, meshinfo_config=config, loop=asyncio.get_event_loop())
 
