@@ -33,15 +33,16 @@ class DataRenderer:
         logging.info(
             f"Saved {len(nodes)} nodes to file ({self.config['paths']['data']}/nodes.json)")
 
-        self.save_file("telemetry.json", self.data.telemetry)
-        logging.info(
-            f"Saved {len(self.data.telemetry)} telemetry to file ({self.config['paths']['data']}/telemetry.json)")
+        for filename, data, label in (
+            ("telemetry.json", self.data.telemetry, 'telemetry'),
+            ("traceroutes.json", self.data.traceroutes, 'traceroutes'),
+        ):
+            self.save_file(filename, data)
 
-        self.save_file("traceroutes.json", self.data.traceroutes)
-        logging.info(
-            f"Saved {len(self.data.traceroutes)} traceroutes to file ({self.config['paths']['data']}/traceroutes.json)")
+            logging.info(
+                f"Saved {len(data)} {label} to file ({self.config['paths']['data']}/{filename})")
 
-    def save_file(self, filename, data):
+    def save_file(self, filename, data,):
         logging.info(f"Saving {filename}")
         with open(f"{self.config['paths']['data']}/{filename}.swp", "w", encoding='utf-8') as f:
             json.dump(data, f, indent=2, sort_keys=True, cls=_JSONEncoder)
