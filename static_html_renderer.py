@@ -142,10 +142,14 @@ class StaticHTMLRenderer:
         )
 
     def render_nodes(self):
+        current_time = datetime.datetime.now(
+            ZoneInfo(self.config['server']['timezone']))
+
         active_nodes = {}
         for id, node in self.data.nodes.items():
             if 'active' in node and node['active']:
-                active_nodes[id] = self._serialize_node(node)
+                active_nodes[id] = self._serialize_node(
+                    node, current_time=current_time)
 
         self.render_html_and_save(
             'nodes.html',
@@ -160,7 +164,7 @@ class StaticHTMLRenderer:
             id = id.replace('!', '')  # todo: remove this line
             self.render_html_and_save(
                 f"node_{id}.html",
-                node=node,
+                node=self._serialize_node(node, simplified=False),
                 nodes=self.data.nodes,
                 hardware=meshtastic_support.HardwareModel,
                 meshtastic_support=meshtastic_support,
@@ -208,10 +212,13 @@ class StaticHTMLRenderer:
         )
 
     # TODO: move to models
-    def _serialize_node(self, node):
+    def _serialize_node(self, node, current_time=None, simplified=True):
         """
         Serialize a node object to a format suitable for saving to an HTML file.
         """
+
+        current_time = current_time if current_time is not None else datetime.datetime.now(
+            ZoneInfo(self.config['server']['timezone']))
 
         last_seen = node["last_seen"] if isinstance(
             node["last_seen"], datetime.datetime) else datetime.datetime.fromisoformat(node["last_seen"])
@@ -228,7 +235,7 @@ class StaticHTMLRenderer:
             "telemetry": node["telemetry"],
             "last_seen_human": last_seen.astimezone().isoformat(),
             "last_seen": last_seen,
-            "since": datetime.datetime.now(ZoneInfo(self.config['server']['timezone'])) - last_seen,
+            "since": current_time - last_seen,
         }
         server_node = self.data.nodes[f'{self.config["server"]["node_id"]}']
         if server_node and 'position' in server_node and node and 'position' in node:
@@ -240,7 +247,13 @@ class StaticHTMLRenderer:
                         server_node["position"]["latitude_i"] / 10000000,
                         server_node["position"]["longitude_i"] / 10000000
                     ), 2)
-        return serialized
+
+        if simplified:
+            return serialized
+        else:
+            result = node.copy()
+            result.update(serialized)
+            return result
 
     def _serialize_neighborinfo(self, node):
         """
@@ -281,20 +294,10 @@ class StaticHTMLRenderer:
         """
         Serialize a position object to a format suitable for saving to an HTML file.
         """
-        if "altitude" in position:
-            altitude = position["altitude"]
-        else:
-            altitude = None
+        s_position = position.copy()
 
         if "latitude_i" in position and "longitude_i" in position:
-            latitude = position["latitude_i"] / 10000000
-            longitude = position["longitude_i"] / 10000000
-        else:
-            latitude = None
-            longitude = None
+            s_position['latitude'] = position["latitude_i"] / 10000000
+            s_position['longitude'] = position["longitude_i"] / 10000000
 
-        return {
-            "altitude": altitude,
-            "latitude": latitude,
-            "longitude": longitude
-        }
+        return s_position
