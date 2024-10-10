@@ -131,49 +131,37 @@ class MemoryDataStore:
                 }
             }
 
-        try:
-            telemetry = self.load_json_file(
-                f"{self.config['paths']['data']}/telemetry.json")
-            if telemetry is not None:
-                self.telemetry = telemetry
-            else:
-                self.telemetry = []
-            if self.telemetry_by_node is None or len(self.telemetry_by_node) == 0:
-                self.telemetry_by_node = {}
-            for msg in self.telemetry:
-                id = msg['from']
-                if id not in self.telemetry_by_node:
-                    self.telemetry_by_node[id] = []
-                self.telemetry_by_node[id].insert(0, msg)
-            logging.info(
-                f"Loaded {len(self.telemetry)} telemetry messages from file ({self.config['paths']['data']}/telemetry.json)")
-            logging.info(
-                f"Loaded telemetry data for {len(self.telemetry_by_node)} nodes")
-        except FileNotFoundError:
-            self.telemetry = []
-            self.telemetry_by_node = {}
+        for (label, filename, data_variable, data_by_node) in (
+                                                              ('telemetry', "telemetry.json",
+                                                               self.telemetry, self.telemetry_by_node),
+                                                              ('traceroutes', "traceroutes.json",
+                                                               self.traceroutes, self.traceroutes_by_node),
+        ):
+            try:
+                unparsed_data = self.load_json_file(
+                    f"{self.config['paths']['data']}/{filename}")
 
-        try:
-            traceroutes = self.load_json_file(
-                f"{self.config['paths']['data']}/traceroutes.json")
-            if traceroutes is not None:
-                self.traceroutes = traceroutes
-            else:
-                self.traceroutes = []
-            if self.traceroutes_by_node is None or len(self.traceroutes_by_node) == 0:
-                self.traceroutes_by_node = {}
-            for msg in self.traceroutes:
-                id = msg['from']
-                if id not in self.traceroutes_by_node:
-                    self.traceroutes_by_node[id] = []
-                self.traceroutes_by_node[id].insert(0, msg)
-            logging.info(
-                f"Loaded {len(self.traceroutes)} traceroutes from file ({self.config['paths']['data']}/traceroutes.json)")
-            logging.info(
-                f"Loaded traceroutes data for {len(self.traceroutes_by_node)} nodes")
-        except FileNotFoundError:
-            self.traceroutes = []
-            self.traceroutes_by_node = {}
+                if unparsed_data is not None:
+                    if isinstance(data_variable, dict):
+                        data_variable.update(unparsed_data)
+                    else:
+                        data_variable += unparsed_data
+
+                    # Create index of data by node as well, if supported (assumes that the json contains a list of messages)
+                    if data_by_node is not None:
+                        for msg in unparsed_data:
+                            node_data = data_by_node.setdefault(
+                                msg['from'], [])
+                            node_data.insert(0, msg)
+
+                logging.info(
+                    f"Loaded {len(data_variable)} {label} from file ({self.config['paths']['data']}/{filename})")
+                if data_by_node is not None:
+                    logging.info(
+                        f"Loaded {label} data for {len(data_by_node)} nodes")
+            except FileNotFoundError:
+                logging.warning(
+                    f"Could not load {label} file {self.config['paths']['data']}/{filename}")
 
     def load_json_file(self, filename):
         if os.path.exists(filename):
