@@ -221,7 +221,7 @@
         <table class="table-auto min-w-full border border-gray-200 bg-gray-50">
           <tbody class="divide-y divide-dashed divide-gray-200">
           {% for neighbor in node.neighborinfo.neighbors %}
-            {% set nid = utils.convert_node_id_from_int_to_hex(neighbor.node_id) %}
+            {% set nid = neighbor.node_id %}
             {% set nnode = nodes[nid] if nid in nodes else None %}
             <tr>
               <td class="w-1/3 p-1 text-nowrap">
