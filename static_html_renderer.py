@@ -67,7 +67,15 @@ class StaticHTMLRenderer:
 
     def render_html_and_save(self, filename, **kwargs):
         logging.debug(f"Rendering {filename}")
-        html = self.render_html(filename, **kwargs)
+        html = self.render_html(filename,
+                                config=self.config,
+                                datetime=datetime.datetime,
+                                timestamp=datetime.datetime.now(
+                                    ZoneInfo(self.config['server']['timezone'])),
+                                utils=utils,
+                                zoneinfo=ZoneInfo(
+                                    self.config['server']['timezone']),
+                                **kwargs)
         if html:
             self.save_file(filename, html)
 
@@ -76,80 +84,48 @@ class StaticHTMLRenderer:
     def render_chat(self):
         self.render_html_and_save(
             'chat.html',
-            config=self.config,
             nodes=self.data.nodes,
             chat=self.data.chat,
-            utils=utils,
-            datetime=datetime.datetime,
-            zoneinfo=ZoneInfo(self.config['server']['timezone']),
-            timestamp=datetime.datetime.now(
-                ZoneInfo(self.config['server']['timezone']))
         )
 
     def render_graph(self):
         self.render_html_and_save(
             'graph.html',
-            config=self.config,
             nodes=self.data.nodes,
             graph=self.data.graph,
-            utils=utils,
-            datetime=datetime.datetime,
-            zoneinfo=ZoneInfo(self.config['server']['timezone']),
-            timestamp=datetime.datetime.now(
-                ZoneInfo(self.config['server']['timezone']))
         )
 
     def render_index(self):
         self.render_html_and_save(
             'index.html',
-            config=self.config,
             nodes=self.data.nodes,
             active_nodes=self.data.nodes,
-            datetime=datetime.datetime,
-            zoneinfo=ZoneInfo(self.config['server']['timezone']),
-            timestamp=datetime.datetime.now(
-                ZoneInfo(self.config['server']['timezone']))
         )
 
     def render_map(self):
         server_node = self.data.nodes[self.config['server']['node_id']]
         self.render_html_and_save(
             'map.html',
-            config=self.config,
             server_node=server_node,
             nodes=self.data.nodes,
-            utils=utils,
-            datetime=datetime,
-            zoneinfo=ZoneInfo(self.config['server']['timezone']),
-            timestamp=datetime.datetime.now(
-                ZoneInfo(self.config['server']['timezone']))
+            timedelta=datetime.timedelta,
         )
 
     def render_mesh_log(self):
         self.render_html_and_save(
             'mesh_log.html',
-            config=self.config,
             messages=self.data.messages,
             json=json,
-            datetime=datetime.datetime,
             JSONEncoder=encoders._JSONEncoder,
-            zoneinfo=ZoneInfo(self.config['server']['timezone']),
-            timestamp=datetime.datetime.now(
-                ZoneInfo(self.config['server']['timezone']))
         )
 
     def render_mqtt_log(self):
         self.render_html_and_save(
             'mqtt_log.html',
-            config=self.config,
             messages=self.data.mqtt_messages,
             mqtt_connect_time=self.data.mqtt_connect_time,
             json=json,
-            datetime=datetime.datetime,
             JSONEncoder=encoders._JSONEncoder,
-            zoneinfo=ZoneInfo(self.config['server']['timezone']),
-            timestamp=datetime.datetime.now(
-                ZoneInfo(self.config['server']['timezone']))
         )
 
     def render_neighbors(self):
@@ -160,15 +136,9 @@ class StaticHTMLRenderer:
 
         self.render_html_and_save(
             'neighbors.html',
-            config=self.config,
             nodes=self.data.nodes,
             active_nodes_with_neighbors=active_nodes_with_neighbors,
             geo=geo,
-            utils=utils,
-            datetime=datetime.datetime,
-            zoneinfo=ZoneInfo(self.config['server']['timezone']),
-            timestamp=datetime.datetime.now(
-                ZoneInfo(self.config['server']['timezone']))
         )
 
     def render_nodes(self):
@@ -179,15 +149,10 @@ class StaticHTMLRenderer:
 
         self.render_html_and_save(
             'nodes.html',
-            config=self.config,
             nodes=self.data.nodes,
             active_nodes=active_nodes,
             hardware=meshtastic_support.HardwareModel,
             meshtastic_support=meshtastic_support,
-            datetime=datetime.datetime,
-            zoneinfo=ZoneInfo(self.config['server']['timezone']),
-            timestamp=datetime.datetime.now(
-                ZoneInfo(self.config['server']['timezone']))
         )
 
     def render_nodes_each(self):
@@ -195,28 +160,17 @@ class StaticHTMLRenderer:
             id = id.replace('!', '')  # todo: remove this line
             self.render_html_and_save(
                 f"node_{id}.html",
-                config=self.config,
                 node=node,
                 nodes=self.data.nodes,
                 hardware=meshtastic_support.HardwareModel,
                 meshtastic_support=meshtastic_support,
-                utils=utils,
-                datetime=datetime.datetime,
-                zoneinfo=ZoneInfo(self.config['server']['timezone']),
-                timestamp=datetime.datetime.now(
-                    ZoneInfo(self.config['server']['timezone']))
             )
 
     def render_routes(self):
         self.render_html_and_save(
             'routes.html',
-            config=self.config,
             nodes=self.data.nodes,
             active_nodes=self.data.nodes,
-            datetime=datetime.datetime,
-            zoneinfo=ZoneInfo(self.config['server']['timezone']),
-            timestamp=datetime.datetime.now(
-                ZoneInfo(self.config['server']['timezone']))
         )
 
     def render_stats(self):
@@ -235,37 +189,22 @@ class StaticHTMLRenderer:
 
         self.render_html_and_save(
             'stats.html',
-            config=self.config,
             stats=stats,
             nodes=self.data.nodes,
-            datetime=datetime.datetime,
-            zoneinfo=ZoneInfo(self.config['server']['timezone']),
-            timestamp=datetime.datetime.now(
-                ZoneInfo(self.config['server']['timezone']))
         )
 
     def render_telemetry(self):
         self.render_html_and_save(
             'telemetry.html',
-            config=self.config,
             nodes=self.data.nodes,
             telemetry=self.data.telemetry,
-            datetime=datetime.datetime,
-            zoneinfo=ZoneInfo(self.config['server']['timezone']),
-            timestamp=datetime.datetime.now(
-                ZoneInfo(self.config['server']['timezone']))
         )
 
     def render_traceroutes(self):
         self.render_html_and_save(
             'traceroutes.html',
-            config=self.config,
             nodes=self.data.nodes,
             traceroutes=self.data.traceroutes,
-            datetime=datetime.datetime,
-            zoneinfo=ZoneInfo(self.config['server']['timezone']),
-            timestamp=datetime.datetime.now(
-                ZoneInfo(self.config['server']['timezone']))
         )
 
     # TODO: move to models
