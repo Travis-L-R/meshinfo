@@ -9,7 +9,7 @@ class _JSONEncoder(json.JSONEncoder):
       return obj.astimezone().isoformat()
     if isinstance(obj, datetime.timedelta):
       return None
-    return obj
+    return super().default(obj)
 
 class _JSONDecoder(json.JSONDecoder):
   def __init__(self, *args, **kwargs):
