@@ -26,8 +26,9 @@ class MQTT:
         self.parser = MeshInfoParser(
             mesh_db=self.data,
             json_enabled=self.config['broker']['decoders']['json']['enabled'],
-            psk_key_register = [e['key'] for e in self.config['broker']['channels'].get('encryption', [])]
-            )
+            psk_key_register=[
+                e['key'] for e in self.config['broker']['channels'].get('encryption', [])]
+        )
         self.handler = MeshInfoHandler(
             mesh_db=self.data, meshinfo_config=config, loop=asyncio.get_event_loop())
 
@@ -87,14 +88,13 @@ class MQTT:
                 await asyncio.sleep(5)
 
     async def process_mqtt_msg(self, client, msg):
-        packet, meta = self.parser.parseMQTT(msg)
+        packet, meta = self.parser.parse_mqtt(msg)
         await self.handler.handle_packet(packet=packet, meta=meta)
 
     async def stop(self):
         """Saves, and shuts down any handlers (so they can save).."""
         await self.data.save(immediately=True)
         await self.handler.stop()
-
 
     async def publish(self, client, topic, msg):
         result = await client.publish(topic, msg)
