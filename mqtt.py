@@ -88,7 +88,7 @@ class MQTT:
                 await asyncio.sleep(5)
 
     async def process_mqtt_msg(self, client, msg):
-        packet, meta = self.parser.parse_mqtt(msg)
+        packet, meta = self.parser.parse_mqtt_message(msg)
         await self.handler.handle_packet(packet=packet, meta=meta)
 
     async def stop(self):
